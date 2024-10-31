@@ -1,3 +1,5 @@
+use std::net::SocketAddrV4;
+
 use near_api::signer::secret_key::SecretKeySigner;
 use near_api::signer::Signer;
 use near_api::{Contract, Transaction};
@@ -38,8 +40,12 @@ async fn main() {
             .key_path(key_path)
             .run(([0, 0, 0, 0], 443))
             .await;
+    } else if let Ok(addrs) = std::env::var("BIND") {
+        warp::serve(routes)
+            .run(addrs.parse::<SocketAddrV4>().unwrap())
+            .await;
     } else {
-        warp::serve(routes).run(([0, 0, 0, 0], 6969)).await;
+        warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
     }
 }
 
