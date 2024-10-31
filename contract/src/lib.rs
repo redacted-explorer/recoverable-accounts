@@ -19,7 +19,7 @@ impl Contract {
             public_key.clone(),
             Allowance::Unlimited,
             env::current_account_id(),
-            "relay_transaction".to_string(),
+            "relay_transactions".to_string(),
         );
         Self {
             recovery_key,
@@ -29,23 +29,6 @@ impl Contract {
 
     pub fn get_recovery_key(&self) -> Vec<u8> {
         self.recovery_key.clone()
-    }
-
-    #[private]
-    pub fn relay_transaction(
-        &mut self,
-        receiver_id: AccountId,
-        method: String,
-        args: Vec<u8>,
-        deposit: NearToken,
-    ) -> Promise {
-        Promise::new(receiver_id).function_call_weight(
-            method,
-            args,
-            deposit,
-            Gas::from_gas(1),
-            GasWeight::default(),
-        )
     }
 
     #[private]
@@ -81,7 +64,7 @@ impl Contract {
                     public_key,
                     Allowance::Unlimited,
                     env::current_account_id(),
-                    "relay_transaction".to_string(),
+                    "relay_transactions".to_string(),
                 ),
             )
     }

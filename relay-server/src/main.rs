@@ -108,7 +108,7 @@ async fn create_account(query: CreateRequest) -> Result<impl Reply, warp::Reject
         .add_actions(vec![
             Action::CreateAccount(CreateAccountAction {}),
             Action::Transfer(TransferAction {
-                deposit: 1_500_000_000_000_000_000_000_000,
+                deposit: 1_289_085_000_000_000_000_000_000,
             }),
             Action::AddKey(Box::new(AddKeyAction {
                 public_key: operator_private_key.public_key(),
