@@ -1,5 +1,6 @@
 use near_sdk::{
-    env, near, AccountId, Allowance, Gas, GasWeight, NearToken, PanicOnDefault, Promise, PublicKey,
+    env, near, require, AccountId, Allowance, Gas, GasWeight, NearToken, PanicOnDefault, Promise,
+    PublicKey,
 };
 
 #[near(contract_state)]
@@ -47,6 +48,28 @@ impl Contract {
         )
     }
 
+    #[private]
+    pub fn relay_transactions(&mut self, transactions: Vec<RelayedTransaction>) -> Promise {
+        require!(!transactions.is_empty(), "No transactions to relay");
+        let mut promise = Promise::new(transactions[0].receiver_id.clone()).function_call_weight(
+            transactions[0].method.clone(),
+            transactions[0].args.clone(),
+            transactions[0].deposit,
+            Gas::from_gas(1),
+            GasWeight::default(),
+        );
+        for transaction in transactions.into_iter().skip(1) {
+            promise = promise.then(Promise::new(transaction.receiver_id).function_call_weight(
+                transaction.method,
+                transaction.args,
+                transaction.deposit,
+                Gas::from_gas(1),
+                GasWeight::default(),
+            ));
+        }
+        promise
+    }
+
     pub fn recover(&mut self, public_key: PublicKey, recovery_signature: Vec<u8>) -> Promise {
         // TODO: check signature
         let old_key = self.user_key.clone().try_into().unwrap();
@@ -62,4 +85,12 @@ impl Contract {
                 ),
             )
     }
+}
+
+#[near(serializers=[json])]
+pub struct RelayedTransaction {
+    pub receiver_id: AccountId,
+    pub method: String,
+    pub args: Vec<u8>,
+    pub deposit: NearToken,
 }
