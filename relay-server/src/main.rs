@@ -1,6 +1,6 @@
 use near_api::signer::secret_key::SecretKeySigner;
 use near_api::signer::Signer;
-use near_api::{Account, Contract, Transaction};
+use near_api::{Contract, Transaction};
 use near_crypto::{PublicKey, SecretKey};
 use near_gas::NearGas;
 use near_primitives::account::AccessKey;
@@ -20,15 +20,26 @@ async fn main() {
     let create = warp::path("create")
         .and(warp::post())
         .and(warp::body::json::<CreateRequest>())
-        .and_then(|query| create_account(query));
+        .and_then(create_account);
     let recover = warp::path("recover")
         .and(warp::post())
         .and(warp::body::json::<RecoverRequest>())
-        .and_then(|query| recover_account(query));
+        .and_then(recover_account);
 
     let routes = create.or(recover);
 
-    warp::serve(routes).run(([0, 0, 0, 0], 6969)).await;
+    if let Ok(tls_options) = std::env::var("TLS") {
+        let cert_path = tls_options.split(':').collect::<Vec<&str>>()[0];
+        let key_path = tls_options.split(':').collect::<Vec<&str>>()[1];
+        warp::serve(routes)
+            .tls()
+            .cert_path(cert_path)
+            .key_path(key_path)
+            .run(([0, 0, 0, 0], 443))
+            .await;
+    } else {
+        warp::serve(routes).run(([0, 0, 0, 0], 6969)).await;
+    }
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -43,7 +54,7 @@ struct CreateRequest {
 #[derive(Debug, serde::Deserialize)]
 enum ChainType {
     Near,
-    EVM,
+    Evm,
     Solana,
 }
 
@@ -61,7 +72,7 @@ async fn create_account(query: CreateRequest) -> Result<impl Reply, warp::Reject
             .unwrap()
             .parse()
             .unwrap(),
-        ChainType::EVM => std::env::var("PARENT_ACCOUNT_ID_EVM")
+        ChainType::Evm => std::env::var("PARENT_ACCOUNT_ID_EVM")
             .unwrap()
             .parse()
             .unwrap(),
