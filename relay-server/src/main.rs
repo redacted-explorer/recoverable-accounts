@@ -2,7 +2,7 @@ use std::net::SocketAddrV4;
 
 use near_api::signer::secret_key::SecretKeySigner;
 use near_api::signer::Signer;
-use near_api::{Contract, Transaction};
+use near_api::{Contract, NetworkConfig, Transaction};
 use near_crypto::{PublicKey, SecretKey};
 use near_gas::NearGas;
 use near_primitives::account::AccessKey;
@@ -22,9 +22,7 @@ async fn main() {
 
     let cors = warp::cors()
         .allow_any_origin()
-        .allow_headers(vec![
-            "content-type",
-        ])
+        .allow_headers(vec!["content-type"])
         .allow_methods(vec!["GET", "POST", "OPTIONS"]);
 
     let create = warp::path("create")
@@ -133,7 +131,10 @@ async fn create_account(query: CreateRequest) -> Result<impl Reply, warp::Reject
             })),
         ])
         .with_signer(Signer::new(SecretKeySigner::new(operator_private_key)).unwrap())
-        .send_to_mainnet()
+        .send_to(&NetworkConfig {
+            rpc_url: "https://rpc.shitzuapes.xyz".parse().unwrap(),
+            ..NetworkConfig::mainnet()
+        })
         .await;
 
     log::info!(
@@ -199,7 +200,10 @@ async fn recover_account(query: RecoverRequest) -> Result<impl Reply, warp::Reje
             operator_account_id,
             Signer::new(SecretKeySigner::new(operator_private_key)).unwrap(),
         )
-        .send_to_mainnet()
+        .send_to(&NetworkConfig {
+            rpc_url: "https://rpc.shitzuapes.xyz".parse().unwrap(),
+            ..NetworkConfig::mainnet()
+        })
         .await;
 
     log::info!(
