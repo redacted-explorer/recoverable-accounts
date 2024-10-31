@@ -1,0 +1,18 @@
+[package]
+name = "recoverable-account-relay-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.41.0", features = ["full"] }
+warp = "0.3.7"
+serde = { version = "1.0.214", features = ["derive"] }
+near-api = "0.2.1"
+near-primitives = "0.26.0"
+near-crypto = "0.26.0"
+dotenvy = "0.15.7"
+near-token = "0.3.0"
+serde_json = "1.0.132"
+near-gas = "0.3.0"
+log = "0.4.22"
+simple_logger = "5.0.0"
