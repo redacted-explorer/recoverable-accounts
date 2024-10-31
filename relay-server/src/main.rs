@@ -22,7 +22,10 @@ async fn main() {
 
     let cors = warp::cors()
         .allow_any_origin()
-        .allow_methods(vec!["GET", "POST"]);
+        .allow_headers(vec![
+            "content-type",
+        ])
+        .allow_methods(vec!["GET", "POST", "OPTIONS"]);
 
     let create = warp::path("create")
         .and(warp::post())
@@ -130,7 +133,7 @@ async fn create_account(query: CreateRequest) -> Result<impl Reply, warp::Reject
             })),
         ])
         .with_signer(Signer::new(SecretKeySigner::new(operator_private_key)).unwrap())
-        .send_to_testnet()
+        .send_to_mainnet()
         .await;
 
     log::info!(
@@ -196,7 +199,7 @@ async fn recover_account(query: RecoverRequest) -> Result<impl Reply, warp::Reje
             operator_account_id,
             Signer::new(SecretKeySigner::new(operator_private_key)).unwrap(),
         )
-        .send_to_testnet()
+        .send_to_mainnet()
         .await;
 
     log::info!(
