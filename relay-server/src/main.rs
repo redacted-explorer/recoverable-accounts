@@ -8,6 +8,7 @@ use near_primitives::action::{
     Action, AddKeyAction, CreateAccountAction, DeployContractAction, TransferAction,
 };
 use near_primitives::types::AccountId;
+use near_primitives::views::ExecutionStatusView;
 use near_token::NearToken;
 use warp::reply::Reply;
 use warp::Filter;
@@ -128,8 +129,21 @@ async fn create_account(query: CreateRequest) -> Result<impl Reply, warp::Reject
         }
     );
 
+    if let Err(err) = &tx {
+        return Ok(warp::reply::json(&serde_json::json!({
+            "error": format!("{err}")
+        })));
+    }
+    let tx = tx.unwrap();
+
+    if let ExecutionStatusView::Failure(err) = &tx.transaction_outcome.outcome.status {
+        return Ok(warp::reply::json(&serde_json::json!({
+            "error": format!("Execution error in transaction {}: {err:?}", tx.transaction.hash)
+        })));
+    }
+
     Ok(warp::reply::json(&serde_json::json!({
-        "ok": tx.is_ok()
+        "account_id": user_account_id,
     })))
 }
 
@@ -174,14 +188,27 @@ async fn recover_account(query: RecoverRequest) -> Result<impl Reply, warp::Reje
         .await;
 
     log::info!(
-        "Create tx: {}",
+        "Recover tx: {}",
         match &tx {
             Ok(tx) => format!("Ok, {}", tx.transaction.hash),
             Err(err) => format!("{err:?}"),
         }
     );
 
+    if let Err(err) = &tx {
+        return Ok(warp::reply::json(&serde_json::json!({
+            "error": format!("{err}")
+        })));
+    }
+    let tx = tx.unwrap();
+
+    if let ExecutionStatusView::Failure(err) = &tx.transaction_outcome.outcome.status {
+        return Ok(warp::reply::json(&serde_json::json!({
+            "error": format!("Execution error in transaction {}: {err:?}", tx.transaction.hash)
+        })));
+    }
+
     Ok(warp::reply::json(&serde_json::json!({
-        "ok": tx.is_ok()
+        "ok": true,
     })))
 }
