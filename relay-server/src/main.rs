@@ -20,14 +20,20 @@ async fn main() {
     dotenvy::dotenv().ok();
     simple_logger::init().unwrap();
 
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_methods(vec!["GET", "POST"]);
+
     let create = warp::path("create")
         .and(warp::post())
         .and(warp::body::json::<CreateRequest>())
-        .and_then(create_account);
+        .and_then(create_account)
+        .with(cors.clone());
     let recover = warp::path("recover")
         .and(warp::post())
         .and(warp::body::json::<RecoverRequest>())
-        .and_then(recover_account);
+        .and_then(recover_account)
+        .with(cors.clone());
 
     let routes = create.or(recover);
 
