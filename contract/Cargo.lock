@@ -2444,6 +2444,7 @@ dependencies = [
 name = "recoverable-account"
 version = "0.1.0"
 dependencies = [
+ "near-crypto",
  "near-sdk",
  "near-workspaces",
  "serde_json",
