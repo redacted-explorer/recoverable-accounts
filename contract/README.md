@@ -1,6 +1,6 @@
 # recoverable-account
 
-cargo-near-new-project-description
+This contract allows users to create a recoverable account on NEAR by using a third-party recovery key, for example, from an EVM or SOL wallet. The user is not supposed to have a full access key to the account, but only a function call access key, which can be deleted and re-created given the valid signature from the recovery key.
 
 ## How to Build Locally?
 
