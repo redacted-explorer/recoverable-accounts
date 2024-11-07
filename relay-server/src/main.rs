@@ -108,7 +108,7 @@ async fn create_account(query: CreateRequest) -> Result<impl Reply, warp::Reject
         .add_actions(vec![
             Action::CreateAccount(CreateAccountAction {}),
             Action::Transfer(TransferAction {
-                deposit: 1_289_085_000_000_000_000_000_000,
+                deposit: 1_286_108_635_492_573_300_000_000,
             }),
             Action::AddKey(Box::new(AddKeyAction {
                 public_key: operator_private_key.public_key(),
@@ -122,7 +122,7 @@ async fn create_account(query: CreateRequest) -> Result<impl Reply, warp::Reject
                 method_name: "new".to_string(),
                 args: serde_json::to_vec(&serde_json::json!({
                     "recovery_key": query.recovery_key,
-                    "public_key": query.public_key,
+                    "public_key": query.public_key.key_data(),
                     "signature": query.signature,
                 }))
                 .unwrap(),
@@ -188,7 +188,7 @@ async fn recover_account(query: RecoverRequest) -> Result<impl Reply, warp::Reje
         .call_function(
             "recover",
             serde_json::json!({
-                "public_key": query.new_public_key,
+                "public_key": query.new_public_key.key_data(),
                 "recovery_signature": query.signature,
             }),
         )
